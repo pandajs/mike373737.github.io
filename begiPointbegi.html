@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html {
+            --bac-color: #373737;
+            --line-color: #eef7c6;
+            --can_size: 900;
+            background: #1b1b1b;
+            color: #ececec;
+        }
+    </style>
+    <script>
+        /*******************\
+        |                   |
+        |      Функции      |
+        |                   |
+        \*******************/
+        //Случайное число в диапазоне
+        let random = (a, b) => a + Math.random() * (b - a);
+
+        // Получение значения CSS переменной
+        let getVarCSS = (property) => getComputedStyle(document.documentElement).getPropertyValue('--' + property);
+
+        // obj.constructor.name
+        //движение точки
+        let movePoint = (p1, p2) => {
+            let d = p1.r + p2.r;
+            let ro = (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+
+            if ((ro > 0) && (ro < d ** 2)) {
+
+                ro = Math.sqrt(ro);
+
+                let k = ro / (ro - d) * 2;
+                p2.x += (p1.x - p2.x) / k;
+                p2.y += (p1.y - p2.y) / k;
+            }
+        }//movePoint
+
+
+        //Класс точки
+        class Point {
+            constructor({ x = 0, y = 0, r = 10, color = '#eef7c6', on = true } = {}) {
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.color = color;
+                this.on = on;
+            }//constructor Point
+        }//Point
+
+        class Line {
+            constructor({x1 = 0,y1 = 0, x2 = 50, y2 = 10,color = '#eeff55', on = true} = {}) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.color = color;
+                this.on = on;              
+            }
+        }
+
+
+        //Холст
+        class Can {
+            constructor({ width = getVarCSS('can_size'), height = getVarCSS('can_size'), dpi = 300, scale = 1 } = {}) {
+                let canvas = String(crypto.randomUUID());
+                document.body.insertAdjacentHTML('beforeend', `<canvas id= ${canvas} width= ${width} height= ${height} 
+                onmousemove = "move(event)" 
+                onmousewheel = "mousewell(event)"
+                onmousedown = "mousedown(event)"
+                onmouseup = "mouseup(event)"></canvas> `);
+                this.canvas = document.getElementById(canvas);
+
+                this.canvas.style.width = this.canvas.style.width || this.canvas.width + 'px';
+                this.canvas.style.height = this.canvas.style.height || this.canvas.height + 'px';
+                let scaleFactor = dpi / 96;
+                this.canvas.width = Math.ceil(this.canvas.width * scaleFactor);
+                this.canvas.height = Math.ceil(this.canvas.height * scaleFactor);
+                this.ctx = this.canvas.getContext('2d');
+                this.ctx.scale(scaleFactor, scaleFactor);
+
+                this.ctx.fillStyle = getVarCSS('bac-color');
+                this.ctx.fillRect(0, 0, width, height);
+
+                this.ctx.fillStyle = getVarCSS('line-color');
+                this.ctx.strokeStyle = getVarCSS('line-color');
+                this.ctx.lineCap = "round";
+                this.ctx.lineJoin = "round";
+                this.scale = scale;
+                this.width = width;
+                this.height = height;
+            }//constructor Can
+
+            sx = (x) => x * this.scale + this.width / 2;
+            sy = (y) => this.height / 2 - y * this.scale;
+
+
+            setPoint = (x, y, r, color) => {
+                this.ctx.fillStyle = color;
+                this.ctx.beginPath();
+                this.ctx.ellipse(this.sx(x), this.sy(y), r, r, 0, 0, 2 * Math.PI);
+                this.ctx.fill();
+            }
+
+            setLine = (x1,y1,x2,y2,color) => {
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(this.se(x1),this.se(x1),)
+            }
+            clear = () => {
+                this.ctx.fillStyle = getVarCSS('bac-color');
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+            }
+
+
+        }//Can
+
+
+
+
+
+
+
+        /*******************\
+        |                   |
+        |    Реализация     |
+        |                   |
+        \*******************/
+        const n_point = 2000;
+        const field_size = 900;
+        const point_size = 5;
+        let points = [];
+        let can;
+        const ZERO = 1e-13;
+
+        let ini = () => {
+            can = new Can();
+
+
+            for (let i = 0; i < n_point; i++) {
+                points[i] = new Point();
+                points[i].x = random(-field_size / 2, field_size / 2);
+                points[i].y = random(-field_size / 2, field_size / 2);
+                points[i].r = point_size;
+                //points[i].color = `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`
+                points[i].color = `hsl(${random(0, 360)},${50}%,${50}%)`
+            }//for
+
+            for (point of points) {
+                can.setPoint(point.x, point.y, point.r);
+            }
+            setInterval(redrow, 10, can);
+        }//ini
+
+        let mousedown = (e) => {
+            if (e.buttons == 1) {
+                let x = e.clientX - can.canvas.offsetLeft - getVarCSS('can_size') / 2;
+                let y = -e.clientY + can.canvas.offsetTop + getVarCSS('can_size') / 2;
+                for (p of points) {
+                    let ro = (p.x - x) ** 2 + (p.y - y) ** 2;
+                    if (ro < p.r ** 2) {
+                        p.on = false;
+                    }
+                }
+            }
+        }//mousedown
+        let mouseup = (e) => {
+            for (p of points) {
+                p.on = true
+            }
+        }//mouseup
+
+        let move = (e) => {
+            if (e.buttons == 1) {
+
+                for (p of points) {
+                    if (!p.on) {
+                        p.x = e.clientX - can.canvas.offsetLeft - getVarCSS('can_size') / 2;
+                        p.y = -e.clientY + can.canvas.offsetTop + getVarCSS('can_size') / 2;
+                        // p.on = false;
+                    }
+
+                }
+
+
+            }
+            // console.log(e);
+        }//move
+
+
+        let mousewell = (e) => {
+            for (p of points) {
+                if (!p.on) {
+                    p.r += e.wheelDelta / 50;
+                    if (p.r < 2) {
+                        p.r = 2;
+                    }
+                }
+
+            }
+        }//mousewell
+
+        let redrow = () => {
+
+            can.clear();
+            let buf_points = []
+
+
+            let start1 = performance.now();
+
+            // console.log(buf_points);
+
+
+
+            for (let p1 = 0; p1 < points.length; p1++)
+                for (let p2 = 0; p2 < points.length; p2++) {
+                    if (points[p2].on)
+                        movePoint(points[p1], points[p2]);
+                }
+
+
+            for (point of points) {
+                //console.log(point);
+                can.setPoint(point.x, point.y, point.r, point.color);
+            }
+            const duration = performance.now() - start1;
+            console.log(`${(1000 / duration).toFixed(0)} FPS`);
+
+        }//redrow
+
+    </script>
+</head>
+
+<body onload="ini()">
+    <button style="height: 30px; background-color: #373737; color: #ececec; font-size: 15px;"
+        onclick="redrow() ">Перерисовать</button>
+
+</body>
+
+</html>
