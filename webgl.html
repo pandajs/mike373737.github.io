@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <link rel="icon" type="image/png"
+        href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAOzSURBVEhL5c0hiGp7HsBxw2tesOzlueGAYTnYDqbDvHSYJLNFmCQ7RZgkO0WYJNNkkswmMYlJMAkWwbAIU4Rhg0xYOPGELSeeeIr7uVfc95gnl9m0YcNHfkf+v9+3Uq3+9fg7Neo0aNLiimtuuOWOex545IlnXpgyZ8maLa+88U61ehS+N3xQo06DJi2uuOaGW+6454FHnnjmhSlzlqzZ8sob75zCfzF8UKNOgyYtrrjmhlvuuOeBR5545oUpc5as2fLKG++cwreGD2rUadCkxRXX3HDLHfc88MgTz7wwZc6SNVteeeOdU/jPhg9q1GnQpMUV19xwyx33PPDIE8+8MGXOkjVbXnnjnVP42vBBjToNmrSuj3/6e/WHqk/ePfPClDlL1mx55Y13TuFfDB/UqNOg+cvF0CXVZ+9fmDJnyZotr7zxzincMnxQo06jdTHwI9UXe1PmLFmz5ZW31rFSLk7hypfZsfJ15qP5qxr15sXDn1Gd2p+zZM22eazkOgXlt9b38ESYgHDiz4Yw9cbFo59Rndqfs2wcK6m7GTkF5bfG9/BYmICQiHgs/PPFo59Rnf58rOzdOZCSkVNQun0Kj4QJCImISUbHf/zrj9/97Z9/uBj4rW9vzu8rO/t7DqRk5BSUo3N4KExASERMMvzPof9WZWd/z4GUjJyCcngOD4QJCImISQYXj35GZWd/z4GUjJyCcnAO94UJCImISfoXj35GZWd/z4GUjJyCsn8O94QJCImISXoXj35GZWd/z4GUjJyCsncOd4UJCImISWh3Lx7+kcrG3o49B1IycgrK7jncESYgJCImoU2nczFwSWXl/YYdew6kZOQUlJ1zuC1MQEhETEKbDt32xdBvVRberdiwY8+BlIycgrJ9DifCBIRExCS06dClR58BQ0aMmTBjwYoNO/YcSMnIKSiTczgWJiAkIiahTYcuPfoMGDJizIQZC1Zs2LHnQEpGTkEZn8ORMAEhETEJbTp06dFnwJARYybMWLBiw449B1IycgrK6BwOhQkIiYhJaNOhS48+A4aMGDNhxoIVG3bsOZCSkVNQhudwIExASERMQpsOXXr0GTBkxJgJMxas2LBjz4GUjJyCMjiHvwoTEBIRk9CmQ5cefQYMGTFmwowFKzbs2HMgJSOnoPx6Dn8RJiAkIiahTYcuPfoMGDJizIQZC1Zs2LHnQEpGTkH55Rz+SZiAkIiYhDYduvToM2DIiDETZixYsWHHngMpGTkF5U+n8Lef/4X/t3D1+G8uREnvwEGrXQAAAABJRU5ErkJggg==" />
+    <meta charset="UTF-8">
+    <title>GL</title>
+    <style>
+        html {
+            background-color: #0b0b0b;
+        }
+    </style>
+    <script id="vertex-shader-2d" type="x-shader/x-vertex">
+        attribute vec4 a_position;
+        uniform float iTime;
+        varying mat4 transform;
+
+        mat4 t_t(in vec3 d){
+            return mat4(1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        d, 1.0);
+        }
+
+        mat4 t_s(in vec3 s){
+            return mat4(1.0/s.x, 0.0, 0.0, 0.0,
+                        0.0, 1.0/s.y, 0.0, 0.0,
+                        0.0, 0.0, 1.0/s.z, 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+        mat4 t_rx(in float a){
+            return mat4(1.0, 0.0, 0.0, 0.0,
+                        0.0, cos(a), sin(a), 0.0,
+                        0.0, -sin(a), cos(a), 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+        mat4 t_ry(in float a){
+            return mat4(cos(a), 0.0, -sin(a), 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        sin(a), 0.0, cos(a), 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+        mat4 t_rz(in float a){
+            return mat4(cos(a), sin(a), 0.0, 0.0,
+                        -sin(a), cos(a), 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+        
+        // все шейдеры имеют функцию main
+        void main() {
+            transform = t_ry(iTime/5.0)*t_rx(-0.785)*t_t(vec3(0.0, 0.0, 10.0))*t_s(vec3(1.0));
+            // gl_Position - специальная переменная вершинного шейдера,
+            // которая отвечает за установку положения
+            gl_Position = a_position;
+
+        }
+       
+      </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script id="fragment-shader-2d" type="x-shader/x-fragment">
+        precision highp float;
+
+        
+        uniform vec2 iResolution;
+
+        varying mat4 transform;
+
+        mat4 t_t(in vec3 d){
+            return mat4(1.0, 0.0, 0.0, 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        d, 1.0);
+        }
+
+        mat4 t_s(in vec3 s){
+            return mat4(1.0/s.x, 0.0, 0.0, 0.0,
+                        0.0, 1.0/s.y, 0.0, 0.0,
+                        0.0, 0.0, 1.0/s.z, 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+        mat4 t_rx(in float a){
+            return mat4(1.0, 0.0, 0.0, 0.0,
+                        0.0, cos(a), sin(a), 0.0,
+                        0.0, -sin(a), cos(a), 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+        mat4 t_ry(in float a){
+            return mat4(cos(a), 0.0, -sin(a), 0.0,
+                        0.0, 1.0, 0.0, 0.0,
+                        sin(a), 0.0, cos(a), 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+        mat4 t_rz(in float a){
+            return mat4(cos(a), sin(a), 0.0, 0.0,
+                        -sin(a), cos(a), 0.0, 0.0,
+                        0.0, 0.0, 1.0, 0.0,
+                        0.0, 0.0, 0.0, 1.0);
+        }
+
+
+        float sdCone(vec3 p, vec3 a, vec3 b, float ra, float rb)
+        {
+            float rba  = rb - ra;
+            float baba = dot(b - a, b - a);
+            float papa = dot(p - a, p - a);
+            float paba = dot(p - a, b - a) / baba;
+        
+            float x = sqrt( papa - paba * paba * baba);
+        
+            float cax = max(0.0, x - ((paba < 0.5) ? ra : rb));
+            float cay = abs(paba - 0.5) - 0.5;
+        
+            float k = rba * rba + baba;
+            float f = clamp((rba * (x - ra) + paba * baba) / k, 0.0, 1.0 );
+        
+            float cbx = x - ra - f * rba;
+            float cby = paba - f;
+            
+            float s = (cbx < 0.0 && cay < 0.0) ? -1.0 : 1.0;
+            
+            return s * sqrt(min(cax * cax + cay * cay * baba, cbx * cbx + cby * cby * baba));
+        }
+        
+        float sdSphere(vec3 p, float s)
+        {
+            return length(p)-s;
+        }
+
+
+        float sdBoxFrame(vec3 p, vec3 b, float e)
+        {
+            p = abs(p) - b;
+            vec3 q = abs(p + e) - e;
+            return min(min(
+            length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
+            length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
+            length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
+        }
+        
+        float sdBox(vec3 p, vec3 b)
+        {
+          vec3 q = abs(p) - b;
+          return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+        }
+        
+
+        vec4 opU(vec4  d1, vec4  d2)
+        {
+	        return (d1.x<d2.x) ? d1 : d2;
+        }
+
+        vec4 opS(vec4  d1, vec4  d2)
+        {
+	        return (-d1.x<d2.x) ? d1 : -d2;
+        }
+
+        vec4  map(in vec3 pos)
+        {
+            vec4  p = vec4(1000.0, vec3(0.5));
+
+            //pos.x = pos.x - 0.5*floor(pos.x/0.5+0.5);
+            //pos.z = pos.z - 0.5*floor(pos.z/0.5+0.5);
+
+
+            vec3  pos1 = vec3((sqrt(pos.x*pos.x+pos.z*pos.z))/sqrt(pos.y+0.01)/3.0-0.1,pos.y,atan(pos.z,pos.x));//свертываение 
+            pos1.y = pos.y + 0.1*sin(pos1.z*7.0)-0.1;//лепестки
+
+
+            p = opU(p, vec4(sdBox(pos1.xyz, vec3(0.001,0.3,3.1415)), vec3(1.0,0.0,0.0)));
+            //p = opU(p, vec4(sdBox(pos.xyz, vec3(0.01,0.3,0.2)), vec3(1.0,0.0,0.0)));
+            p = opS(p, vec4(sdBox(pos-vec3(0.0,-0.2, 0.0), vec3(10.1,0.2,10.1)), vec3(1.0,0.0,0.0)));
+            //p = opU(p, vec4(sdCone(pos, vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.1), 0.002, 0.002), vec3(0.0,0.0,1.0)));
+            //p = opU(p, vec4(sdCone(pos, vec3(0.0, 0.0, 0.0), vec3(0.0, 0.1, 0.0), 0.002, 0.002), vec3(0.0,1.0,0.0)));
+            //p = opU(p, vec4(sdCone(pos, vec3(0.0, 0.0, 0.0), vec3(0.1, 0.0, 0.0), 0.002, 0.002), vec3(1.0,0.0,0.0)));
+
+            p = opU(p, vec4(sdCone(pos, vec3(0.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), 0.01, 0.01), vec3(0.0,1.0,0.0)));
+            
+
+            //p = opU(p, vec2(sdSphere(pos-vec3(0.0, 0.0, -0.5),0.15), 1.0));
+           
+            
+            return p;
+        }
+        
+        // https://iquilezles.org/articles/normalsSDF
+        vec3 calcNormal( in vec3 pos )
+        {
+            //vec2 e = vec2(1.0,-1.0)*0.5773;
+            vec2 e = vec2(1.0,-1.0)*0.5773;
+            const float eps = 0.000001;
+            return normalize( e.xyy*map( pos + e.xyy*eps ).x + 
+                              e.yyx*map( pos + e.yyx*eps ).x + 
+                              e.yxy*map( pos + e.yxy*eps ).x + 
+                              e.xxx*map( pos + e.xxx*eps ).x);
+        }
+
+
+
+
+
+        void main()
+        {
+            //float iTime = 10.0;
+            //vec2 iResolution = vec2(100.0);
+            // camera movement	
+
+/*
+
+	        float an = 0.5*(iTime-10.0);
+
+	        vec3 ro = vec3( 1.0*cos(an), 0.9, 1.0*sin(an) );
+            vec3 ta = vec3( 0.0, 0.0, 0.0 );
+            // camera matrix
+            vec3 ww = normalize( ta - ro );
+            vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
+            vec3 vv = normalize( cross(uu,ww));
+
+    
+    
+            vec3 tot = vec3(0.0);
+    
+
+            vec2 p = (-iResolution.xy + 2.0*gl_FragCoord.xy)/iResolution.y;
+
+	        // create view ray
+            vec3 rd = normalize( p.x*uu + p.y*vv + 1.0*ww );
+*/
+
+
+            vec4 ro = transform*vec4((gl_FragCoord.xy*2.0)/iResolution.y-1.0, 0.0, 1.0);
+            vec4 rd = transform*vec4(0.0, 0.0, -1.0, 0.0);
+
+            vec3 tot = vec3(0.0);
+            // raymarch
+            const float tmax = 20.0;
+            float t = 0.0;
+            vec4 h = vec4(0.0);
+            for( int i=0; i<200; i++ )
+            {
+                vec4 pos = ro + t*rd;
+                h = map(pos.xyz);
+                if( h.x<0.001 || t>tmax ) break;
+                t += h.x/3.0;
+            }
+
+            // shading/lighting	
+            vec3 col = vec3(88.0/256.0, 136.0/256.0, 204.0/256.0);
+
+            if( t<tmax )
+            {
+                vec4 pos = ro + t * rd;
+                vec3 nor = calcNormal(pos.xyz);
+                float dif = clamp(dot(nor,vec3(0.57703)), 0.0, 1.0 );
+                
+                float amb = 0.5 + 0.5*dot(nor,vec3(-1.0,-1.0,0.0));
+                col = h.yzw*amb +  h.yzw*dif;
+            }
+
+            // gamma        
+            col = sqrt( col );
+	        tot += col;
+
+
+	        gl_FragColor = vec4( tot, 1.0 );
+        }
+
+      </script>
+    <script>
+        /* eslint no-console:0 consistent-return:0 */
+        //"use strict";
+        class Can {
+            constructor({ width = 900, height = 900, dpi = 96 } = {}) {
+                let canvas = String(crypto.randomUUID());
+                document.body.insertAdjacentHTML('beforeend', `<canvas id= ${canvas} width= ${width} height= ${height}"></canvas>`);
+                this.canvas = document.getElementById(canvas);
+
+                this.canvas.style.width = this.canvas.style.width || this.canvas.width + 'px';
+                this.canvas.style.height = this.canvas.style.height || this.canvas.height + 'px';
+                let scaleFactor = dpi / 96;
+                this.canvas.width = Math.ceil(this.canvas.width * scaleFactor);
+                this.canvas.height = Math.ceil(this.canvas.height * scaleFactor);
+
+                this.gl = this.canvas.getContext("webgl");
+                if (!this.gl) return;
+
+                // Get the strings for our GLSL shaders
+                let vertexShaderSource = document.querySelector("#vertex-shader-2d").text;
+                let fragmentShaderSource = document.querySelector("#fragment-shader-2d").text;
+
+                // create GLSL shaders, upload the GLSL source, compile the shaders
+                let vertexShader = this.createShader(this.gl, this.gl.VERTEX_SHADER, vertexShaderSource);
+                let fragmentShader = this.createShader(this.gl, this.gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+                // Link the two shaders into a program
+                let program = this.createProgram(this.gl, vertexShader, fragmentShader);
+
+
+
+                // look up where the vertex data needs to go.
+                let positionAttributeLocation = this.gl.getAttribLocation(program, "a_position");
+
+                // Create a buffer and put three 2d clip space points in it
+                let positionBuffer = this.gl.createBuffer();
+
+
+
+
+                // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
+
+                let positions = [
+                    -1, -1,
+                    -1, 1,
+                    1, 1,
+                    -1, -1,
+                    1, 1,
+                    1, -1,
+                ];
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(positions), this.gl.STATIC_DRAW);
+
+                // code above this line is initialization code.
+                // code below this line is rendering code.
+
+                // webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+
+                // Tell WebGL how to convert from clip space to pixels
+                this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+
+                // Clear the canvas
+                this.gl.clearColor(0, 0, 0, 1);
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+
+
+                // Tell it to use our program (pair of shaders)
+                this.gl.useProgram(program);
+
+                // Turn on the attribute
+                this.gl.enableVertexAttribArray(positionAttributeLocation);
+
+
+
+
+                // Bind the position buffer.
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer);
+
+                // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+                var size = 2;          // 2 components per iteration
+                var type = this.gl.FLOAT;   // the data is 32bit floats
+                var normalize = false; // don't normalize the data
+                var stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+                var offset = 0;        // start at the beginning of the buffer
+                this.gl.vertexAttribPointer(
+                    positionAttributeLocation, size, type, normalize, stride, offset);
+
+                // draw
+                var primitiveType = this.gl.TRIANGLES;
+                var offset = 0;
+                var count = 6;
+
+                this.transform = [
+                    1.0, 0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0,
+                ];
+
+
+
+
+                //this.gl.uniform1f(this.gl.getAttribLocation(program, 'u_size'), 100.0)
+                let start = Date.now(); // запомнить время начала
+                setInterval(() => {
+                    this.gl.uniform1f(this.gl.getUniformLocation(program, 'iTime'), (Date.now() - start) / 1000);
+                    //this.gl.uniform1f(this.gl.getUniformLocation(program, 'iTime'), 0);
+                    this.gl.uniform2f(this.gl.getUniformLocation(program, 'iResolution'), this.canvas.width, this.canvas.height);
+                    this.gl.uniformMatrix4fv(this.gl.getUniformLocation(program, 'u_transform'), false, this.transform);
+                    this.gl.drawArrays(primitiveType, offset, count);
+                }, 1000 / 10);
+            }//constructor Can
+
+
+            createShader(gl, type, source) {
+                var shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+                if (success) {
+                    return shader;
+                }
+
+                console.log(gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+            }//createShader
+
+            createProgram(gl, vertexShader, fragmentShader) {
+                var program = gl.createProgram();
+                gl.attachShader(program, vertexShader);
+                gl.attachShader(program, fragmentShader);
+                gl.linkProgram(program);
+                var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+                if (success) {
+                    return program;
+                }
+
+                console.log(gl.getProgramInfoLog(program));
+                gl.deleteProgram(program);
+            }//createProgram
+
+
+
+
+        }//Can
+
+
+
+
+
+
+
+
+        function main() {
+            let can = new Can();
+        }
+
+
+    </script>
+</head>
+
+<body onload="main();">
+</body>
+
+</html>
